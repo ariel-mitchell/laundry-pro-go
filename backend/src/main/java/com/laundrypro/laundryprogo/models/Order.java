@@ -16,7 +16,7 @@ public class Order extends AbstractEntity {
 
     private String orderNumber;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     private Customer customer;
 
     @OneToOne(cascade = CascadeType.ALL)

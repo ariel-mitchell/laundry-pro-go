@@ -19,18 +19,16 @@ import java.util.List;
 public class Customer extends AbstractEntity {
 
     private String name;
-    private Boolean isRegular;
-    private Boolean isBlacklisted;
+    private Boolean isRegular = false;
+    private Boolean isBlacklisted = false;
 
     @OneToMany
     @JoinColumn(name = "customer_id")
-    List<Order> orders = new ArrayList<>();
+    private List<Order> orders = new ArrayList<>();
 
-
-    public Customer(String name) {
+    public Customer(String name, Boolean isRegular) {
         this.name = name;
-        this.isRegular = false;
-        this. isBlacklisted = false;
+        this.isRegular = isRegular;
     }
 
     @Override

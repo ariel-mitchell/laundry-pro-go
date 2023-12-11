@@ -2,9 +2,9 @@ package com.laundrypro.laundryprogo.service;
 
 import com.laundrypro.laundryprogo.models.Customer;
 import com.laundrypro.laundryprogo.models.Order;
-import com.laundrypro.laundryprogo.models.OrderDetails;
 import com.laundrypro.laundryprogo.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,8 +16,7 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
-    public Order createOrder(Order order, OrderDetails orderDetails, Customer customer) {
-        order.setOrderDetails(orderDetails);
+    public Order createOrder(Order order, Customer customer) {
         order.setCustomer(customer);
         return orderRepository.save(order);
     }
@@ -27,7 +26,7 @@ public class OrderService {
     }
 
     public List<Order> getAllOrders() {
-        return (List<Order>) orderRepository.findAll();
+        return (List<Order>) orderRepository.findAll(Sort.by(Sort.Direction.DESC));
     }
 
     public Order updateOrder(Order order) {
