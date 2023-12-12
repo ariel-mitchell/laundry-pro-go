@@ -2,7 +2,6 @@ package com.laundrypro.laundryprogo.service;
 
 import com.laundrypro.laundryprogo.models.Customer;
 import com.laundrypro.laundryprogo.models.Order;
-import com.laundrypro.laundryprogo.models.OrderDetails;
 import com.laundrypro.laundryprogo.models.dto.OrderDto;
 import com.laundrypro.laundryprogo.repository.CustomerRepository;
 import com.laundrypro.laundryprogo.repository.OrderRepository;
@@ -23,10 +22,12 @@ public class OrderService {
     private CustomerRepository customerRepository;
 
     public Order createOrder(OrderDto orderDto) {
+        //TODO: logic that will stop an order with the same order number from being created
         Order order = new Order();
         order.setOrderNumber(orderDto.getOrderNumber());
         Customer customer = customerRepository.findById(orderDto.getCustomerId()).orElse(new Customer());
         order.setCustomer(customer);
+        order.setOrderDetails(orderDto.getOrderDetails());
         return orderRepository.save(order);
     }
 
@@ -39,8 +40,8 @@ public class OrderService {
     public Order updateOrder(Order order) {
         Order existingOrder = orderRepository.findById(order.getId()).get();
         existingOrder.setOrderNumber(order.getOrderNumber());
-//        existingOrder.setCustomer(order.getCustomer());
-//        existingOrder.setOrderDetails(order.getOrderDetails());
+        existingOrder.setCustomer(order.getCustomer());
+        existingOrder.setOrderDetails(order.getOrderDetails());
         return orderRepository.save(existingOrder);
     }
 
