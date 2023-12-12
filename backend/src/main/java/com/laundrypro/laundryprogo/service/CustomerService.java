@@ -48,7 +48,7 @@ public class CustomerService {
     }
 
     public String deleteCustomer(int customerId) {
-        //Delete orders associated with the customer?
+        //TODO: Delete orders associated with the customer?
         customerRepository.deleteById(customerId);
         return "Customer successfully deleted.";
     }

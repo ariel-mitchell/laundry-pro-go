@@ -1,6 +1,8 @@
 package com.laundrypro.laundryprogo.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,8 @@ import java.util.Date;
 @Setter
 public class OrderDetails extends AbstractEntity{
 
+    @NotNull
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="dd-MM-yyyy")
     private Date datePlaced;
     private int bagsAtPickup;
     private int bagsAtDropoff;
