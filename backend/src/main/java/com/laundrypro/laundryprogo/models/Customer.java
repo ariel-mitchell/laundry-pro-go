@@ -33,6 +33,11 @@ public class Customer extends AbstractEntity {
         this.isRegular = isRegular;
     }
 
+    public Customer(String customerName) {
+        super();
+        this.name = customerName;
+    }
+
     @Override
     public String toString() {
         return name;

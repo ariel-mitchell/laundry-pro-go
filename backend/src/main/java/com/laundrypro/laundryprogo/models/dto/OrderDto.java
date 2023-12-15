@@ -16,8 +16,9 @@ public class OrderDto {
     @NotBlank
     private String orderNumber;
 
-    @NotNull
     private int customerId;
+
+    private String customerName;
 
     @NotNull
     private OrderDetails orderDetails;
