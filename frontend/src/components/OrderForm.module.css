@@ -1,6 +1,17 @@
 .container {
-    display:contents;
+    display:flex;
     justify-content: center;
     padding-left: 20px;
     padding-right: 20px;
+}
+
+.alert {
+    display:block;
+    justify-items: center;
+    width: 50%;
+    margin-left: 400px;
+}
+
+.hidden {
+    visibility: hidden;
 }

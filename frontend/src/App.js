@@ -8,7 +8,7 @@ function App() {
   return (
     <div className="App">
       <ButtonAppBar/>
-      <OrderForm/>
+      <OrderForm />
       <Footer/>
 
     </div>
