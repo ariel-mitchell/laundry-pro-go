@@ -25,10 +25,10 @@ public class OrderService {
         //TODO: logic that will stop an order with the same order number from being created
         Order order = new Order();
         order.setOrderNumber(orderDto.getOrderNumber());
-        Optional<Customer> optCustomer = customerRepository.findById(orderDto.getCustomerId());
+        Optional<Customer> optCustomer = customerRepository.findById(orderDto.getCustomer().getId());
         Customer customer;
         if (optCustomer.isEmpty()) {
-            customer = new Customer(orderDto.getCustomerName());
+            customer = new Customer(orderDto.getCustomer().getName());
             customerRepository.save(customer);
         } else {
             customer = optCustomer.get();

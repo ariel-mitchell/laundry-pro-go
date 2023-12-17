@@ -3,6 +3,8 @@ package com.laundrypro.laundryprogo.models;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,9 +19,12 @@ import org.hibernate.validator.constraints.UniqueElements;
 @Table(name="bookings")
 public class Order extends AbstractEntity {
 
+    @NotNull
+    @NotBlank
     private String orderNumber;
 
     @ManyToOne
+    @NotNull
     @JsonBackReference
     private Customer customer;
 
