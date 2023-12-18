@@ -23,7 +23,7 @@ public class Order extends AbstractEntity {
     @NotBlank
     private String orderNumber;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
     @JsonBackReference
     private Customer customer;

@@ -2,6 +2,7 @@ package com.laundrypro.laundryprogo.models;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -23,7 +24,7 @@ public class Customer extends AbstractEntity {
     private Boolean isRegular = false;
     private Boolean isBlacklisted = false;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id")
     @JsonManagedReference
     private List<Order> orders = new ArrayList<>();

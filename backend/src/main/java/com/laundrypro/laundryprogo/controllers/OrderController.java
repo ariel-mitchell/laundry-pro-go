@@ -24,11 +24,16 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() { return new ResponseEntity<>(orderService.getAllOrders(), HttpStatus.OK); }
+    public ResponseEntity<List<OrderDto>> getAllOrders() { return new ResponseEntity<>(orderService.getAllOrders(), HttpStatus.OK); }
 
     @GetMapping("{id}")
     public ResponseEntity<Optional<Order>> getSingleOrder (@PathVariable("id") int orderId) {
         return new ResponseEntity<>(orderService.getOrderById(orderId), HttpStatus.OK);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> deleteOrder (@PathVariable("id") int orderId) {
+        return new ResponseEntity<>(orderService.deleteSingleOrder(orderId), HttpStatus.OK);
     }
 
 }

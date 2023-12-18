@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ public class OrderService {
 
     public Order createOrder(OrderDto orderDto) {
         //TODO: logic that will stop an order with the same order number from being created
+
         Order order = new Order();
         order.setOrderNumber(orderDto.getOrderNumber());
         Optional<Customer> optCustomer = customerRepository.findById(orderDto.getCustomer().getId());
@@ -42,7 +44,15 @@ public class OrderService {
         return orderRepository.findById(orderId);
     }
 
-    public List<Order> getAllOrders() { return orderRepository.findAll(Sort.by(Sort.Direction.DESC)); }
+    public List<OrderDto> getAllOrders() {
+        List<Order> orders = orderRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
+        List<OrderDto> toSend = new ArrayList<>();
+        for (Order o : orders) {
+            OrderDto order = new OrderDto(o.getOrderNumber(), o.getCustomer(), o.getOrderDetails());
+            toSend.add(order);
+        }
+        return toSend;
+    }
 
     public Order updateOrder(Order order) {
         Order existingOrder = orderRepository.findById(order.getId()).get();
