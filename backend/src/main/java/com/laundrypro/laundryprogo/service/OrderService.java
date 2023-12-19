@@ -30,7 +30,7 @@ public class OrderService {
         Optional<Customer> optCustomer = customerRepository.findById(orderDto.getCustomer().getId());
         Customer customer;
         if (optCustomer.isEmpty()) {
-            customer = new Customer(orderDto.getCustomer().getName());
+            customer = new Customer(orderDto.getCustomer().getName(), orderDto.getCustomer().getIsRegular(), orderDto.getCustomer().getIsBlacklisted());
             customerRepository.save(customer);
         } else {
             customer = optCustomer.get();

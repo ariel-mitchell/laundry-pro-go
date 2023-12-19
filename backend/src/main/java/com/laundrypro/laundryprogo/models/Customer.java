@@ -16,7 +16,6 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class Customer extends AbstractEntity {
 
@@ -29,9 +28,10 @@ public class Customer extends AbstractEntity {
     @JsonManagedReference
     private List<Order> orders = new ArrayList<>();
 
-    public Customer(String name, Boolean isRegular) {
+    public Customer(String name, Boolean isRegular, Boolean isBlacklisted) {
         this.name = name;
         this.isRegular = isRegular;
+        this.isBlacklisted = isBlacklisted;
     }
 
     public Customer(String customerName) {
