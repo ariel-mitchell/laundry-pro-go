@@ -5,6 +5,14 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import Collapse from '@mui/material/Collapse';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 // import Alert from '@mui/material/Alert'
 // import Stack from '@mui/material/Stack'
 
@@ -17,7 +25,9 @@ export default function OrderForm() {
 
   const [customer, setCustomer] = useState({
     id: null,
-    name: ''
+    name: '',
+    isRegular: false,
+    isBlacklisted: false
   });
 
   const [customers, setCustomers] = useState([]);
@@ -39,6 +49,25 @@ export default function OrderForm() {
   const handleVisibility = (e) => {
     setVisible((prev) => !prev)
   };
+
+  const [open, toggleOpen] = useState(false);
+
+  const handleClose = () => {
+    setDialogValue({
+      id: null,
+      name: '',
+      isRegular: false,
+      isBlacklisted: false
+    });
+    toggleOpen(false);
+  };
+
+  const [dialogValue, setDialogValue] = useState({
+    id: null,
+    name: '',
+    isRegular: false,
+    isBlacklisted: false
+  });
 
   const handleChange = (e) => {
     if (e.target.name === "orderNumber") {
@@ -67,14 +96,41 @@ export default function OrderForm() {
     });
   };
 
+  const checkExistingCustomerName = () => {
+    for (let customer of customers) {
+      if (customer.name === dialogValue.name) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   const orderObject = {orderNumber, customer, orderDetails};
 
   React.useEffect(() => {
     fetch("http://localhost:8080/customers").then(res=>res.json()).then(result=>setCustomers(result)).catch(e=>console.log(e));
   })
 
+  const handleSubmitNewCustomerData = (event) => {
+    event.preventDefault();
+
+    if (checkExistingCustomerName()) {
+      window.alert("That customer name already exists. Make your new customer name more unique to tell them apart!");
+      return;
+    }
+
+    setCustomer({
+      id: dialogValue.id,
+      name: dialogValue.name,
+      isRegular: dialogValue.isRegular,
+      isBlacklisted: dialogValue.isBlacklisted,
+    });
+    handleClose();
+  };
+
   function submitData(e) {
     e.preventDefault();
+
     if (orderNumber === "" || (customer.id === 0 && customer.name === "") || (customer.id === null && customer.name === "") || orderDetails.datePlaced === "") {
       window.alert("Please enter all required fields.")
       return ;
@@ -90,8 +146,6 @@ export default function OrderForm() {
       window.alert("Order successfully submitted!");
       reset();})
     .catch(e=>console.log(e));
-
-  
   };
 
   return (
@@ -109,19 +163,27 @@ export default function OrderForm() {
           noValidate={false}
         >
           <TextField error={orderNumber ? false : true} name="orderNumber" label="Order Number" variant="outlined" id="outlined-error-helper-text" helperText="Order number required." value={orderNumber} onChange={handleChange} />
-          <Autocomplete
+          <><Autocomplete
             value={customer}
             onChange={(event, newValue) => {
               if (typeof newValue === 'string') {
-                setCustomer({
-                  id: 0,
-                  name: newValue
+                setTimeout(() => {
+                  toggleOpen(true);
+                  setDialogValue({
+                    id: 0,
+                    name: newValue,
+                    isRegular: false,
+                    isBlacklisted: false,
+                  });
                 });
               } else if (newValue && newValue.inputValue) {
                 // Create a new value from the user input
-                setCustomer({
+                toggleOpen(true);
+                setDialogValue({
                   id: 0,
-                  name: newValue.inputValue
+                  name: newValue.inputValue,
+                  isRegular: false,
+                  isBlacklisted: false,
                 });
               } else {
                 setCustomer(newValue);
@@ -167,6 +229,61 @@ export default function OrderForm() {
               <TextField {...params} label="Customer" error={customer.name ? false : true } id="outlined-error-helper-text" helperText="Customer required." />
             )}
           />
+          <Dialog open={open} onClose={handleClose}>
+          <form onSubmit={handleSubmitNewCustomerData}>
+          <DialogTitle>Add a New Customer</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              If adding a different customer with the same name, make it unique somehow!
+            </DialogContentText>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="name"
+              value={dialogValue.name}
+              onChange={(event) =>
+                setDialogValue({
+                  ...dialogValue,
+                  name: event.target.value,
+                })
+              }
+              label="Customer Name"
+              type="text"
+              variant="standard"
+            />
+            <FormGroup>
+              <FormControlLabel 
+                control={<Checkbox color="success" 
+                checked={dialogValue.isRegular}
+                onChange={(e) => 
+                  setDialogValue({
+                    ...dialogValue,
+                    isRegular: e.target.checked,
+                  })
+                }
+                />} 
+                label="Customer is a Regular" 
+              />
+              <FormControlLabel 
+                control={<Checkbox color="default"
+                  checked={dialogValue.isBlacklisted}
+                  onChange={(e) =>
+                    setDialogValue({
+                      ...dialogValue,
+                      isBlacklisted: e.target.checked,
+                    })
+                  }
+                  />} 
+                label="Blacklist Customer (do not take again)" 
+              />
+            </FormGroup>
+          </DialogContent>
+              <DialogActions>
+                <Button onClick={handleClose}>Cancel</Button>
+                <Button name="submitNewCustomer" type="submit">Add</Button>
+              </DialogActions>
+            </form>
+          </Dialog></>
           {/* TODO: update field to be date input */}
           <TextField error={orderDetails.datePlaced ? false : true} label="Date Placed" name="datePlaced" variant="outlined" id="outlined-error-helper-text" helperText="Date required." value={orderDetails.datePlaced} onChange={handleChange} />
         </Box>
