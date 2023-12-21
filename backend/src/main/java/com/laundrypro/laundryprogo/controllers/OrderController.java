@@ -26,12 +26,15 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<List<OrderDto>> getAllOrders() { return new ResponseEntity<>(orderService.getAllOrders(), HttpStatus.OK); }
 
-    @GetMapping("{id}")
+    @GetMapping("/numbers")
+    public ResponseEntity<List<String>> getAllOrderNumbers() {return new ResponseEntity<>(orderService.getOrderNumbers(), HttpStatus.OK); }
+
+    @GetMapping("/{id}")
     public ResponseEntity<Optional<Order>> getSingleOrder (@PathVariable("id") int orderId) {
         return new ResponseEntity<>(orderService.getOrderById(orderId), HttpStatus.OK);
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteOrder (@PathVariable("id") int orderId) {
         return new ResponseEntity<>(orderService.deleteSingleOrder(orderId), HttpStatus.OK);
     }

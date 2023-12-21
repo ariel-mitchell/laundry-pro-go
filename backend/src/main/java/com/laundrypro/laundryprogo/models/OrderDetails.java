@@ -18,7 +18,7 @@ import java.util.Date;
 public class OrderDetails extends AbstractEntity{
 
     @NotNull
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="dd-MM-yyyy")
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="MM/dd/yyyy")
     private Date datePlaced;
     private int bagsAtPickup;
     private int bagsAtDropoff;

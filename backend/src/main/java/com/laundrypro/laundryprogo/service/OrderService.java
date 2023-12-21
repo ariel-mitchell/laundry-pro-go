@@ -54,6 +54,15 @@ public class OrderService {
         return toSend;
     }
 
+    public List<String> getOrderNumbers() {
+        List<String> orderNumbers = new ArrayList<>();
+        List<Order> orders = orderRepository.findAll();
+        for (Order o : orders) {
+            orderNumbers.add(o.getOrderNumber());
+        }
+        return orderNumbers;
+    }
+
     public Order updateOrder(Order order) {
         Order existingOrder = orderRepository.findById(order.getId()).get();
         existingOrder.setOrderNumber(order.getOrderNumber());
