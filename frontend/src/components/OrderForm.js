@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -13,15 +13,27 @@ import DialogActions from '@mui/material/DialogActions';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import { DatePicker } from '@mui/x-date-pickers';
+import dayjs from 'dayjs';
+import InputAdornment from '@mui/material/InputAdornment';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
 // import Alert from '@mui/material/Alert'
 // import Stack from '@mui/material/Stack'
 
+
 import styles from './OrderForm.module.css';
+
 
 const filter = createFilterOptions();
 
+
+//TODO: refactor using react hooks, create custom hooks and store in separate file, general cleanup, etc
 export default function OrderForm() {
   const [orderNumber, setOrderNumber] = useState('');
+
+  const [orderNumbers, setOrderNumbers] = useState([]);
 
   const [customer, setCustomer] = useState({
     id: null,
@@ -80,6 +92,13 @@ export default function OrderForm() {
     }
   };
 
+  const handleDateChange = (value) => {
+    setOrderDetails({
+      ...orderDetails,
+      datePlaced: value.$M+1 +'/'+ value.$D +'/'+ value.$y,
+    })
+}
+
   const reset = () => {
     setOrderNumber('');
     setCustomer({id: null, name: ''});
@@ -107,9 +126,16 @@ export default function OrderForm() {
 
   const orderObject = {orderNumber, customer, orderDetails};
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch("http://localhost:8080/customers").then(res=>res.json()).then(result=>setCustomers(result)).catch(e=>console.log(e));
   })
+
+  useEffect(() => {
+    fetch("http://localhost:8080/orders/numbers")
+    .then(res=>res.json())
+    .then(result=>setOrderNumbers(result))
+    .catch(e=>console.log(e));
+}, []);
 
   const handleSubmitNewCustomerData = (event) => {
     event.preventDefault();
@@ -130,10 +156,16 @@ export default function OrderForm() {
 
   function submitData(e) {
     e.preventDefault();
+    //TODO: refactor to use timeout to validate BEFORE form submission is attempted
+    if (orderNumbers.includes(orderNumber)) {
+      window.alert("There is already an order with that number. Please update that order or create a new one.");
+      setOrderNumber('');
+      return;
+    }
 
     if (orderNumber === "" || (customer.id === 0 && customer.name === "") || (customer.id === null && customer.name === "") || orderDetails.datePlaced === "") {
       window.alert("Please enter all required fields.")
-      return ;
+      return;
     }
 
     fetch("http://localhost:8080/orders/add", {
@@ -284,8 +316,7 @@ export default function OrderForm() {
               </DialogActions>
             </form>
           </Dialog></>
-          {/* TODO: update field to be date input */}
-          <TextField error={orderDetails.datePlaced ? false : true} label="Date Placed" name="datePlaced" variant="outlined" id="outlined-error-helper-text" helperText="Date required." value={orderDetails.datePlaced} onChange={handleChange} />
+          <DatePicker error={orderDetails.datePlaced ? false : true} label="Date Placed" variant="outlined" id="outlined-error-helper-text" helperText="Date required." value={dayjs(orderDetails.datePlaced)} onChange={(value) => handleDateChange(value)} format="MM-DD-YYYY"/>
         </Box>
         <h4>Optional Order Details</h4>
         <Box
@@ -299,9 +330,28 @@ export default function OrderForm() {
           <TextField label="Number of Loads" name="numberOfLoads" variant="outlined" value={orderDetails.numberOfLoads} onChange={handleChange} />
           <TextField label="Total Mileage" name="mileage" variant="outlined" value={orderDetails.mileage} onChange={handleChange} /><br></br>
           <TextField label="Total Pounds" name="pounds" variant="outlined" value={orderDetails.pounds}onChange={handleChange} />
-          {/* TODO: make these fields currency */}
-          <TextField label="Order Payment" name="orderPayment" variant="outlined" value={orderDetails.orderPayment} onChange={handleChange} />
-          <TextField label="Tip" name="tip" variant="outlined" value={orderDetails.tip} onChange={handleChange} />
+          <FormControl>
+          <InputLabel htmlFor="orderPayment">Order Payment</InputLabel>
+            <OutlinedInput
+              id="orderPayment"
+              name="orderPayment"
+              startAdornment={<InputAdornment position="start">$</InputAdornment>}
+              label="Order Payment"
+              value={orderDetails.orderPayment} 
+              onChange={handleChange}
+            />
+          </FormControl>
+          <FormControl>
+            <InputLabel htmlFor="tip">Tip</InputLabel>
+            <OutlinedInput
+              id="tip"
+              name="tip"
+              startAdornment={<InputAdornment position="start">$</InputAdornment>}
+              label="Tip"
+              value={orderDetails.tip} 
+              onChange={handleChange}
+            />
+          </FormControl>
           <TextField label="Notes" name="notes" variant="outlined" value={orderDetails.notes} onChange={handleChange}/>
         </Box>
         <Box>

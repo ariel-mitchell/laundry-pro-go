@@ -1,3 +1,5 @@
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 import './App.css';
 import OrderForm from './components/OrderForm';
@@ -7,13 +9,16 @@ import DisplayOrder from './components/DisplayOrder'
 
 function App() {
   return (
-    <div className="App">
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <div className="App">
       <ButtonAppBar/>
       <OrderForm />
       <DisplayOrder />
       <Footer/>
 
-    </div>
+     </div>
+    </LocalizationProvider>
+
   );
 }
 

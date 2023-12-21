@@ -81,7 +81,7 @@ const columns = [
     editable: true,
     sortable: false,
     filterable: false,
-    renderCell: (params) => <div className="rowitem">{params.row.orderDetails.orderPayment}</div>
+    renderCell: (params) => <div className="rowitem">${params.row.orderDetails.orderPayment}</div>
   },
   {
     field: 'tip',
@@ -91,7 +91,7 @@ const columns = [
     editable: true,
     sortable: false,
     filterable: false,
-    renderCell: (params) => <div className="rowitem">{params.row.orderDetails.tip}</div>
+    renderCell: (params) => <div className="rowitem">${params.row.orderDetails.tip}</div>
   },
   {
     field: 'notes',

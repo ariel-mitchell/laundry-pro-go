@@ -16,3 +16,11 @@
     visibility: hidden;
     width: 50%;
 }
+
+input:user-valid {
+    border-color: aquamarine;
+}
+
+input:user-invalid{
+    border-color: crimson;
+}
