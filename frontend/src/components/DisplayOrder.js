@@ -1,106 +1,96 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import { DataGrid } from '@mui/x-data-grid';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 const columns = [
   { field: 'orderNumber', headerName: 'Order Number', width: 130 },
   {
-    field: 'name',
+    field: 'customer.name',
     headerName: 'Customer',
     width: 150,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => <div className="rowitem">{params.row.customer.name}</div>
+    sortable: true,
+    filterable: true
   },
   {
-    field: 'datePlaced',
+    //TODO: not rendering and sorting by DATE
+    field: 'orderDetails.datePlaced',
     headerName: 'Date Placed',
-    type: 'date',
     width: 100,
     editable: true,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => <div className="rowitem">{params.row.orderDetails.datePlaced}</div>
+    sortable: true,
+    filterable: true
   },
   {
-    field: 'bagsAtPickup',
+    field: 'orderDetails.bagsAtPickup',
     headerName: 'Bags at Pickup',
     type: 'number',
     width: 110,
     editable: true,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => <div className="rowitem">{params.row.orderDetails.bagsAtPickup}</div>
+    sortable: true,
+    filterable: true
   },
   {
-    field: 'numberOfLoads',
+    field: 'orderDetails.numberOfLoads',
     headerName: '# Loads',
     type: 'number',
     width: 80,
     editable: true,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => <div className="rowitem">{params.row.orderDetails.numberOfLoads}</div>
+    sortable: true,
+    filterable: true
   },
   {
-    field: 'pounds',
+    field: 'orderDetails.pounds',
     headerName: 'Total Pounds',
     type: 'number',
     width: 100,
     editable: true,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => <div className="rowitem">{params.row.orderDetails.pounds}</div>
+    sortable: true,
+    filterable: true
   },
   {
-    field: 'bagsAtDropoff',
+    field: 'orderDetails.bagsAtDropoff',
     headerName: 'Bags at Dropoff',
     type: 'number',
     width: 110,
     editable: true,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => <div className="rowitem">{params.row.orderDetails.bagsAtDropoff}</div>
+    sortable: true,
+    filterable: true
   },
   {
-    field: 'mileage',
+    field: 'orderDetails.mileage',
     headerName: 'Total Mileage',
     type: 'number',
     width: 100,
     editable: true,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => <div className="rowitem">{params.row.orderDetails.mileage}</div>
+    sortable: true,
+    filterable: true
   },
   {
-    field: 'orderPayment',
+    field: 'orderDetails.orderPayment',
     headerName: 'Pay',
-    type: 'number',
-    width: 80,
+    type: 'amount',
+    width: 60,
     editable: true,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => <div className="rowitem">${params.row.orderDetails.orderPayment}</div>
+    sortable: true,
+    filterable: true,
   },
   {
-    field: 'tip',
+    field: 'orderDetails.tip',
     headerName: 'Tip',
     type: 'number',
-    width: 80,
+    width: 60,
     editable: true,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => <div className="rowitem">${params.row.orderDetails.tip}</div>
+    sortable: true,
+    filterable: true
   },
   {
-    field: 'notes',
+    field: 'orderDetails.notes',
     headerName: 'Notes',
     width: 300,
     editable: true,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => <div className="rowitem">{params.row.orderDetails.notes}</div>
+    sortable: true,
+    filterable: true
   },
 ];
 
@@ -108,14 +98,47 @@ const columns = [
 export default function DisplayOrder() {
     const [ orders, setOrders ] = useState([]);
 
-    
-// TODO: React.useCallback to stop infinite loops?
+    const [ flattenedOrders, setFlattenedOrders ] = useState([]);
+
+    const flattenObj = useCallback((obj, roots = [], sep = '.') => Object
+  // find props of given object
+  .keys(obj)
+  // return an object by iterating props
+  .reduce((memo, prop) => Object.assign(
+    // create a new object
+    {},
+    // include previously returned object
+    memo,
+    Object.prototype.toString.call(obj[prop]) === '[object Object]'
+      // keep working if value is an object
+      ? flattenObj(obj[prop], roots.concat([prop]), sep)
+      // include current prop and value and prefix prop with the roots
+      : {[roots.concat([prop]).join(sep)]: obj[prop]},
+    ), {}), [])
+
+  //TODO: use same to flatten objs?
+  const flattenArr = useCallback((into, node) => {
+    if(node == null) {
+      return into;
+    }
+    if(Array.isArray(node)) {
+      let newArr = [];
+      for (let i of node) {
+        newArr.push(flattenObj(i));
+      }
+    return newArr.reduce(flattenArr, into);
+    }
+    into.push(node);
+    return flattenArr(into, node.children);
+  }, [flattenObj])
+
     useEffect(() => {
         fetch("http://localhost:8080/orders")
         .then(res=>res.json())
         .then(result=>setOrders(result))
+        .then(setFlattenedOrders(flattenArr([], orders)))
         .catch(e=>console.log(e));
-    }, [orders]);
+    }, [orders, flattenArr]);
 
     function getRowId(row) {
         return row.orderNumber;
@@ -125,7 +148,7 @@ export default function DisplayOrder() {
     <Box sx={{ height: 635, width: '90%', margin:'auto', marginTop:'50px', marginBottom:'50px' }}>
         <h2>Order Details</h2>
       <DataGrid
-        rows={orders}
+        rows={flattenedOrders}
         columns={columns}
         getRowId={getRowId}
         initialState={{
