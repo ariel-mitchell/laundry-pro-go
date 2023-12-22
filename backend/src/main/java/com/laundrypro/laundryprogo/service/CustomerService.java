@@ -1,12 +1,14 @@
 package com.laundrypro.laundryprogo.service;
 
 import com.laundrypro.laundryprogo.models.Customer;
+import com.laundrypro.laundryprogo.models.Order;
 import com.laundrypro.laundryprogo.repository.CustomerRepository;
 import com.laundrypro.laundryprogo.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,7 +50,23 @@ public class CustomerService {
     }
 
     public String deleteCustomer(int customerId) {
-        //TODO: Delete orders associated with the customer?
+//        Delete all orders associated with a customer first
+        Optional<Customer> optCustomer = customerRepository.findById(customerId);
+        Customer toDelete;
+        if (optCustomer.isEmpty()) {
+            return "There is no customer with that ID";
+        } else {
+            toDelete = optCustomer.get();
+        }
+        List<Order> orders = toDelete.getOrders();
+        List<Integer> orderIds = new ArrayList<>();
+
+        for (Order o : orders) {
+            orderIds.add(o.getId());
+        }
+
+        orderRepository.deleteAllById(orderIds);
+
         customerRepository.deleteById(customerId);
         return "Customer successfully deleted.";
     }
