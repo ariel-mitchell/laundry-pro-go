@@ -32,19 +32,14 @@ public class CustomerController {
         return new ResponseEntity<>(customerService.getCustomerById(customerId), HttpStatus.OK);
     }
 
-    @PatchMapping("{id}/blacklist")
-    public ResponseEntity<Customer> blacklistCustomer (@PathVariable("id") int customerId) {
-        return new ResponseEntity<>(customerService.blacklistCustomer(customerId), HttpStatus.OK);
-    }
-
-    @PatchMapping("{id}/regular")
-    public ResponseEntity<Customer> makeRegular (@PathVariable("id") int customerId) {
-        return new ResponseEntity<>(customerService.makeRegular(customerId), HttpStatus.OK);
-    }
-
     @PatchMapping("{id}/update-name")
     public ResponseEntity<Customer> updateCustomerName (@PathVariable("id") int customerId, @RequestBody String name) {
         return new ResponseEntity<>(customerService.updateCustomerName(customerId, name), HttpStatus.OK);
+    }
+
+    @PatchMapping("{id}/status")
+    public ResponseEntity<Customer> updateCustomerStatus (@RequestBody Customer customer) {
+        return new ResponseEntity<>(customerService.updateCustomerStatus(customer), HttpStatus.OK);
     }
 
     @DeleteMapping("{id}")

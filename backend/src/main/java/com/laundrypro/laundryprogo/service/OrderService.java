@@ -30,7 +30,9 @@ public class OrderService {
         Optional<Customer> optCustomer = customerRepository.findById(orderDto.getCustomer().getId());
         Customer customer;
         if (optCustomer.isEmpty()) {
-            customer = new Customer(orderDto.getCustomer().getName(), orderDto.getCustomer().getIsRegular(), orderDto.getCustomer().getIsBlacklisted());
+            //if customer is marked as a regular, they will not be added to blacklist
+            Boolean toBlacklist = !orderDto.getCustomer().getIsRegular() && orderDto.getCustomer().getIsBlacklisted();
+            customer = new Customer(orderDto.getCustomer().getName(), orderDto.getCustomer().getIsRegular(), toBlacklist);
             customerRepository.save(customer);
         } else {
             customer = optCustomer.get();

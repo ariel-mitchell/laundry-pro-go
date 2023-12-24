@@ -43,6 +43,15 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
+    public Customer updateCustomerStatus (Customer customer) {
+        Customer existingCustomer = customerRepository.findById(customer.getId()).get();
+        //if customer is marked as a regular, they will not be added to blacklist
+        Boolean toBlacklist = !customer.getIsRegular() && customer.getIsBlacklisted();
+        existingCustomer.setIsRegular(customer.getIsRegular());
+        existingCustomer.setIsBlacklisted(toBlacklist);
+        return customerRepository.save(existingCustomer);
+    }
+
     public Customer updateCustomerName (int customerId, String name) {
         Customer customer = customerRepository.findById(customerId).orElse(new Customer());
         customer.setName(name);
