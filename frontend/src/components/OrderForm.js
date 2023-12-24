@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -22,12 +23,9 @@ import FormControl from '@mui/material/FormControl';
 // import Alert from '@mui/material/Alert'
 // import Stack from '@mui/material/Stack'
 
-
 import styles from './OrderForm.module.css';
 
-
 const filter = createFilterOptions();
-
 
 //TODO: refactor using react hooks, create custom hooks and store in separate file, general cleanup, etc
 export default function OrderForm() {
@@ -163,7 +161,7 @@ export default function OrderForm() {
       return;
     }
 
-    if (orderNumber === "" || (customer.id === 0 && customer.name === "") || (customer.id === null && customer.name === "") || orderDetails.datePlaced === "") {
+    if (orderNumber.trim() === "" || (customer.id === 0 && customer.name === "") || (customer.id === null && customer.name === "") || orderDetails.datePlaced === "") {
       window.alert("Please enter all required fields.")
       return;
     }
@@ -185,7 +183,7 @@ export default function OrderForm() {
       <Collapse in={visible}>
         <h1>Add An Order</h1>
         {/* TODO: add alert HTML elements instead of window alert? */}
-        {/* <Alert sx={{ width: '50%', margin:'auto', marginTop:'60px', textAlign:'center' }} variant="filled" severity="error">Order Number is Required!</Alert> */}
+        {/* <Alert open={!!orderNumber} sx={{ width: '50%', margin:'auto', marginTop:'30px', marginBottom:'30px' }} variant="filled" severity="error">Order Number is Required!</Alert> */}
         <Box
         className={styles.container}
           component="form"
@@ -194,7 +192,7 @@ export default function OrderForm() {
           }}
           noValidate={false}
         >
-          <TextField error={orderNumber ? false : true} name="orderNumber" label="Order Number" variant="outlined" id="outlined-error-helper-text" helperText="Order number required." value={orderNumber} onChange={handleChange} />
+          <TextField error={!orderNumber} name="orderNumber" label="Order Number" variant="outlined" id="outlined-error-helper-text" helperText={!orderNumber ? "Order number required" : ""} value={orderNumber} onChange={handleChange} />
           <><Autocomplete
             value={customer}
             onChange={(event, newValue) => {
@@ -258,7 +256,7 @@ export default function OrderForm() {
             sx={{ width: 300 }}
             freeSolo
             renderInput={(params) => (
-              <TextField {...params} label="Customer" error={customer.name ? false : true } id="outlined-error-helper-text" helperText="Customer required." />
+              <TextField {...params} label="Customer" error={!customer.name} id="outlined-error-helper-text" helperText={!customer.name ? "Customer required" : ""} />
             )}
           />
           <Dialog open={open} onClose={handleClose}>
@@ -266,7 +264,7 @@ export default function OrderForm() {
           <DialogTitle>Add a New Customer</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              If adding a different customer with the same name, make it unique somehow!
+              If adding a different customer with the same name, make it unique somehow! (i.e. add town or other identifier)
             </DialogContentText>
             <TextField
               autoFocus
@@ -308,15 +306,27 @@ export default function OrderForm() {
                   />} 
                 label="Blacklist Customer (do not take again)" 
               />
+              {dialogValue.isRegular && dialogValue.isBlacklisted ? <Alert severity='error'>A customer cannot be a regular AND blacklisted</Alert> : <></>}
             </FormGroup>
           </DialogContent>
               <DialogActions>
                 <Button onClick={handleClose}>Cancel</Button>
-                <Button name="submitNewCustomer" type="submit">Add</Button>
+                <Button disabled={dialogValue.isRegular && dialogValue.isBlacklisted ? true : false} name="submitNewCustomer" type="submit">Add</Button>
               </DialogActions>
             </form>
           </Dialog></>
-          <DatePicker error={orderDetails.datePlaced ? false : true} label="Date Placed" variant="outlined" id="outlined-error-helper-text" helperText="Date required." value={dayjs(orderDetails.datePlaced)} onChange={(value) => handleDateChange(value)} format="MM-DD-YYYY"/>
+          <DatePicker 
+            error={!orderDetails.datePlaced} 
+            label="Date Placed" 
+            variant="outlined" 
+            id="outlined-error-helper-text" 
+            slotProps={!orderDetails.datePlaced ? {
+              textField: {
+                helperText: "Date Required",
+              },
+            } : false}
+            value={dayjs(orderDetails.datePlaced)} 
+            onChange={(value) => handleDateChange(value)} format="MM-DD-YYYY"/>
         </Box>
         <h4>Optional Order Details</h4>
         <Box

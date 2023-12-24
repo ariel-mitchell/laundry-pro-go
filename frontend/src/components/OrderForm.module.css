@@ -6,8 +6,8 @@
 }
 
 .alert {
-    display:block;
-    justify-items: center;
+    display:flex;
+    justify-content: center;
     width: 50%;
     margin-left: 400px;
 }
