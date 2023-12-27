@@ -34,9 +34,14 @@ public class OrderController {
         return new ResponseEntity<>(orderService.getOrderById(orderId), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteOrder (@PathVariable("id") int orderId) {
-        return new ResponseEntity<>(orderService.deleteSingleOrder(orderId), HttpStatus.OK);
+    @PatchMapping("/update")
+    public ResponseEntity<Order> updateOrder (@RequestBody OrderDto orderDto) {
+        return new ResponseEntity<>(orderService.updateOrder(orderDto), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete/{orderNumber}")
+    public ResponseEntity<String> deleteOrder (@PathVariable("orderNumber") String orderNumber) {
+        return new ResponseEntity<>(orderService.deleteSingleOrder(orderNumber), HttpStatus.OK);
     }
 
 }

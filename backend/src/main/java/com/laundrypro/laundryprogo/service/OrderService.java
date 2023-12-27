@@ -46,6 +46,22 @@ public class OrderService {
         return orderRepository.findById(orderId);
     }
 
+    public Order getOrderByOrderNumber(String orderNumber) {
+        List<Order> orders = orderRepository.findAll();
+        int orderId = 0;
+        for (Order order : orders) {
+            if (order.getOrderNumber().equals(orderNumber)) {
+                orderId = order.getId();
+            }
+        }
+        Optional<Order> optOrder = orderRepository.findById(orderId);
+        Order existingOrder = null;
+        if (optOrder.isPresent()) {
+            existingOrder = optOrder.get();
+        }
+        return existingOrder;
+    }
+
     public List<OrderDto> getAllOrders() {
         List<Order> orders = orderRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
         List<OrderDto> toSend = new ArrayList<>();
@@ -65,16 +81,17 @@ public class OrderService {
         return orderNumbers;
     }
 
-    public Order updateOrder(Order order) {
-        Order existingOrder = orderRepository.findById(order.getId()).get();
-        existingOrder.setOrderNumber(order.getOrderNumber());
-        existingOrder.setCustomer(order.getCustomer());
-        existingOrder.setOrderDetails(order.getOrderDetails());
+    public Order updateOrder(OrderDto orderDto) {
+        Order existingOrder = getOrderByOrderNumber(orderDto.getOrderNumber());
+        existingOrder.setOrderNumber(orderDto.getOrderNumber());
+        existingOrder.setCustomer(orderDto.getCustomer());
+        existingOrder.setOrderDetails(orderDto.getOrderDetails());
+
         return orderRepository.save(existingOrder);
     }
 
-    public String deleteSingleOrder(int orderId) {
-        orderRepository.deleteById(orderId);
+    public String deleteSingleOrder(String orderNumber) {
+        orderRepository.deleteById(getOrderByOrderNumber(orderNumber).getId());
         return "Order successfully deleted.";
     }
 

@@ -16,7 +16,7 @@ import org.hibernate.validator.constraints.UniqueElements;
 @AllArgsConstructor
 @Getter
 @Setter
-@Table(name="bookings")
+@Table(name="all_orders")
 public class Order extends AbstractEntity {
 
     @NotNull
