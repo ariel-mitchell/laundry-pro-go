@@ -1,27 +1,11 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
-import Collapse from '@mui/material/Collapse';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import { Alert, Autocomplete, Box, Button, Checkbox, Collapse, createFilterOptions, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { FormControl, FormControlLabel, FormGroup, FormHelperText, InputAdornment, InputLabel, OutlinedInput, TextField } from '@mui/material/';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import InputAdornment from '@mui/material/InputAdornment';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
-// import Alert from '@mui/material/Alert'
-// import Stack from '@mui/material/Stack'
+// import Alert from '@mui/material/Alert';
+// import Stack from '@mui/material/Stack';
 
 import styles from './OrderForm.module.css';
 
@@ -122,6 +106,27 @@ export default function OrderForm() {
     return false;
   }
 
+  const validateForm = (orderNumber, customer, orderDetails) => {
+    //TODO: refactor to use timeout to validate BEFORE form submission is attempted
+    if (orderNumbers.includes(orderNumber)) {
+      window.alert("There is already an order with that number. Please update that order or create a new one.");
+      setOrderNumber('');
+      return false;
+    }
+
+    if (orderNumber.trim() === "" || (customer.id === 0 && customer.name === "") || (customer.id === null && customer.name === "") || orderDetails.datePlaced === "") {
+      window.alert("Please enter all required fields.")
+      return false;
+    }
+
+    if (isNaN(Number(orderDetails.bagsAtPickup)) || isNaN(Number(orderDetails.bagsAtDropoff)) || isNaN(Number(orderDetails.numberOfLoads)) || isNaN(Number(orderDetails.mileage)) || isNaN(Number(orderDetails.pounds)) || isNaN(Number(orderDetails.orderPayment)) || isNaN(Number(orderDetails.tip))) {
+      window.alert("Invalid entries in optional order details.");
+      return false;
+    }
+
+    return true;
+  }
+
   const orderObject = {orderNumber, customer, orderDetails};
 
   useEffect(() => {
@@ -154,15 +159,8 @@ export default function OrderForm() {
 
   function submitData(e) {
     e.preventDefault();
-    //TODO: refactor to use timeout to validate BEFORE form submission is attempted
-    if (orderNumbers.includes(orderNumber)) {
-      window.alert("There is already an order with that number. Please update that order or create a new one.");
-      setOrderNumber('');
-      return;
-    }
-
-    if (orderNumber.trim() === "" || (customer.id === 0 && customer.name === "") || (customer.id === null && customer.name === "") || orderDetails.datePlaced === "") {
-      window.alert("Please enter all required fields.")
+    const isValid = validateForm(orderNumber, customer, orderDetails);
+    if (!isValid) {
       return;
     }
 
@@ -324,7 +322,7 @@ export default function OrderForm() {
               textField: {
                 helperText: "Date Required",
               },
-            } : false}
+            } : {}}
             value={dayjs(orderDetails.datePlaced)} 
             onChange={(value) => handleDateChange(value)} format="MM-DD-YYYY"/>
         </Box>
@@ -333,16 +331,17 @@ export default function OrderForm() {
           sx={{
             '& > :not(style)': { m: 1, width: '25ch', padding:"10px" },
           }}
-          noValidate={true}
+          noValidate
         >
-          <TextField label="Bags at Pickup" name="bagsAtPickup" variant="outlined" value={orderDetails.bagsAtPickup} onChange={handleChange} />
-          <TextField label="Bags at Dropoff" name="bagsAtDropoff" variant="outlined" value={orderDetails.bagsAtDropoff} onChange={handleChange} />
-          <TextField label="Number of Loads" name="numberOfLoads" variant="outlined" value={orderDetails.numberOfLoads} onChange={handleChange} />
-          <TextField label="Total Mileage" name="mileage" variant="outlined" value={orderDetails.mileage} onChange={handleChange} /><br></br>
-          <TextField label="Total Pounds" name="pounds" variant="outlined" value={orderDetails.pounds}onChange={handleChange} />
+          <TextField error={isNaN(Number(orderDetails.bagsAtPickup))} helperText={isNaN(Number(orderDetails.bagsAtPickup)) ? "Must be a number" : ""} label="Bags at Pickup" name="bagsAtPickup" variant="outlined" value={orderDetails.bagsAtPickup} onChange={handleChange}/>
+          <TextField error={isNaN(Number(orderDetails.bagsAtDropoff))} helperText={isNaN(Number(orderDetails.bagsAtDropoff)) ? "Must be a number" : ""} label="Bags at Dropoff" name="bagsAtDropoff" variant="outlined" value={orderDetails.bagsAtDropoff} onChange={handleChange} />
+          <TextField error={isNaN(Number(orderDetails.numberOfLoads))} helperText={isNaN(Number(orderDetails.numberOfLoads)) ? "Must be a number" : ""} label="Number of Loads" name="numberOfLoads" variant="outlined" value={orderDetails.numberOfLoads} onChange={handleChange} />
+          <TextField error={isNaN(Number(orderDetails.mileage))} helperText={isNaN(Number(orderDetails.mileage)) ? "Must be a number" : ""} label="Total Mileage" name="mileage" variant="outlined" value={orderDetails.mileage} onChange={handleChange} /><br></br>
+          <TextField error={isNaN(Number(orderDetails.pounds))} helperText={isNaN(Number(orderDetails.pounds)) ? "Must be a number" : ""} label="Total Pounds" name="pounds" variant="outlined" value={orderDetails.pounds}onChange={handleChange} />
           <FormControl>
           <InputLabel htmlFor="orderPayment">Order Payment</InputLabel>
             <OutlinedInput
+              error={isNaN(Number(orderDetails.orderPayment))}
               id="orderPayment"
               name="orderPayment"
               startAdornment={<InputAdornment position="start">$</InputAdornment>}
@@ -350,10 +349,12 @@ export default function OrderForm() {
               value={orderDetails.orderPayment} 
               onChange={handleChange}
             />
+            <FormHelperText error>{isNaN(Number(orderDetails.orderPayment)) ? "Must be a number" : ""}</FormHelperText>
           </FormControl>
           <FormControl>
             <InputLabel htmlFor="tip">Tip</InputLabel>
             <OutlinedInput
+              error={isNaN(Number(orderDetails.tip))}
               id="tip"
               name="tip"
               startAdornment={<InputAdornment position="start">$</InputAdornment>}
@@ -361,6 +362,7 @@ export default function OrderForm() {
               value={orderDetails.tip} 
               onChange={handleChange}
             />
+              <FormHelperText error>{isNaN(Number(orderDetails.tip)) ? "Must be a number" : ""}</FormHelperText>
           </FormControl>
           <TextField label="Notes" name="notes" variant="outlined" value={orderDetails.notes} onChange={handleChange}/>
         </Box>

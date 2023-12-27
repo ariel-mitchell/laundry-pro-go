@@ -1,36 +1,20 @@
 import * as React from 'react';
-import { Box, Button, Dialog, Alert, Snackbar, DialogTitle, DialogContent, DialogActions, FormGroup, FormControlLabel, Checkbox, Popover, Typography } from '@mui/material/';
-import { DataGrid } from '@mui/x-data-grid';
+import { Autocomplete, Box, Button, Dialog, Alert, Snackbar, DialogTitle, DialogContent, DialogActions, FormGroup, FormControlLabel, Checkbox, Popover, TextField, Typography } from '@mui/material/';
+import { DataGrid, GridActionsCellItem, GridRowEditStopReasons, GridRowModes } from '@mui/x-data-grid';
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Close';
 
 import styles from "./DisplayOrder.module.css";
 
 export default function DisplayOrder() {
 
-  const [ susAlert, setSusAlert ] = useState(false);
+  //State and fetch handlers for order(s) & customers
+  const [ orders, setOrders ] = useState([]);
 
-  const handleCloseAlert = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
-    setSusAlert(false);
-  };
-
-  const SuccessAlert = useCallback( 
-    (props) => {
-    return (
-      <Snackbar anchorOrigin={{vertical:'bottom', horizontal:'center'}} open={susAlert} autoHideDuration={6000} onClose={handleCloseAlert}>
-      <Alert onClose={handleCloseAlert} severity="success" varient="filled" sx={{ width: '80%' }}>
-        {props.message}
-      </Alert>
-      </Snackbar>
-    );
-  }, [susAlert]
-);
-
-  //Handlers and fields for updating customer in a dialogue box
-  const [ open, toggleOpen ] = useState(false);
+  const [ customers, setCustomers ] = useState([]);
 
   const [ customer, setCustomer ] = useState({
     id: null,
@@ -38,6 +22,50 @@ export default function DisplayOrder() {
     isRegular: false,
     isBlacklisted: false
   });
+
+  const [ searchByCustomer, setSearchByCustomer ] = useState(false);
+
+  useEffect(() => {
+      if (searchByCustomer) {
+        let url = `http://localhost:8080/search/byCustomer/${customer.id}`;
+        fetch(url)
+        .then(res=>res.json())
+        .then(result=>setOrders(result))
+        .catch(e=>console.log(e));
+        return;
+      }
+
+      fetch("http://localhost:8080/orders")
+      .then(res=>res.json())
+      .then(result=>setOrders(result))
+      .catch(e=>console.log(e));
+  }, [orders, searchByCustomer, customer.id]);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/customers").then(res=>res.json()).then(result=>setCustomers(result)).catch(e=>console.log(e));
+  })
+
+  // const searchByOrderNumber = (e) => {
+  //   let filteredOrders = [];
+  //   if (e.target.value.trim() === "" || e.target.value === null) {
+  //     setSearchOrderNumber(false);
+  //     return;
+  //   }
+
+    
+  //   for (let order of orders) {
+  //     if (order.orderNumber === e.target.value) {
+  //       console.log(order.orderNumber);
+  //       console.log(e.target.value);
+  //       filteredOrders.push(order);
+  //     }
+  //   }
+  //   setSearchOrderNumber(true);
+  //   setOrders(filteredOrders);
+  // }
+
+  //Handlers and fields for updating customer in a dialogue box
+  const [ open, toggleOpen ] = useState(false);
 
   const updateCustomer = (e) => {
     e.preventDefault();
@@ -51,7 +79,7 @@ export default function DisplayOrder() {
     })
     .then(sus=> {
       console.log(sus);
-      setSusAlert(true);
+      setSnackbar({ children: 'User successfully saved', severity: 'success' });
     })
     .catch(e=>console.log(e));
 
@@ -79,30 +107,114 @@ export default function DisplayOrder() {
   }, [],
   );
 
+  //Handlers and state for updating rows of orders
+  const [snackbar, setSnackbar] = useState(null);
+
+  const handleCloseSnackbar = () => setSnackbar(null);
+  // const [order, setOrder] = useState({});
+  // const [rows, setRows] = useState(orders);
+  const [rowModesModel, setRowModesModel] = useState({});
+
+  const handleRowEditStop = (params, event) => {
+    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+      event.defaultMuiPrevented = true;
+    }
+  };
+
+  const handleEditClick = useCallback(
+    (id) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  }, [rowModesModel]
+  );
+
+  const handleSaveClick = useCallback(
+    (id) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  }, [rowModesModel]
+  );
+
+  const handleDeleteClick = useCallback(
+    (id) => () => {
+    if (!window.confirm("Delete Order?")) {
+      return;
+    }
+    
+    let url = `http://localhost:8080/orders/delete/${id}`;
+
+    fetch(url, {
+      method:"DELETE",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify()
+    })
+    .then(sus=> {
+      console.log(sus);
+      window.alert("Order Successfully Deleted");
+    })
+    .catch(e=>console.log(e));
+  }, []
+  );
+
+  const handleCancelClick = useCallback(
+    (id) => () => {
+    setRowModesModel({
+      ...rowModesModel,
+      [id]: { mode: GridRowModes.View, ignoreModifications: true },
+    });
+  }, [rowModesModel]
+  );
+
+  const submitUpdates = (updatedRow, originalRow) => {
+    console.log(updatedRow);
+    console.log(originalRow);
+
+    setSnackbar({ children: 'User successfully saved', severity: 'success' });
+  };
+
+  const handleProcessRowUpdateError = useCallback((error) => {
+    setSnackbar({ children: error.message, severity: 'error' });
+    console.log(error);
+  }, []);
+
+  const handleRowModesModelChange = (newRowModesModel) => {
+    setRowModesModel(newRowModesModel);
+  };
+
+  //Column definitions
   const columns = useMemo (
     () => [
     { field: 'orderNumber', headerName: 'Order Number', width: 130, editable:false },
     { 
       field: 'customerName', 
       headerName: 'Customer', 
-      type: 'actions',
+      type: 'text',
       width: 150,
       valueGetter: (params) => {
         return `${params.row.customer}`;
       },
       editable: false,
-      sortable: true,
-      filterable: true,
+      sortable: false,
+      filterable: false,
       //TODO: fix 'touchRippleRef' error
-      getActions: (params) => [
-        <p className={styles.clickableCustomer} 
-        onClick={(event) => {
+      renderCell: (params) => (
+      <p onClick={() => {
           setCustomer(params.row.customer);
           toggleOpen(true);
-              }
-            }
-        onMouseEnter={handlePopoverOpen} onMouseLeave={handlePopoverClose} >{`${params.row.customer.name}`}</p>,
-      ],
+          }
+        }
+        onMouseEnter={handlePopoverOpen} onMouseLeave={handlePopoverClose}>{params.row.customer.name}</p>
+      ),
+    //   getActions: (params) => [
+        // <GridActionsCellItem label={params.row.customer.name}>
+        //   <Typography 
+        //   label={params.row.customer.name}
+        //   onClick={() => {
+        //     setCustomer(params.row.customer);
+        //     toggleOpen(true);
+        //         }
+        //       }
+        //   onMouseEnter={handlePopoverOpen} onMouseLeave={handlePopoverClose} >{`${params.row.customer.name}`}</Typography>
+        // </GridActionsCellItem>,
+    //   ],
     },
     {
       field: 'datePlaced',
@@ -110,6 +222,9 @@ export default function DisplayOrder() {
       type: "date",
       width: 100,
       valueGetter: (params) => new Date(params.row.orderDetails.datePlaced),
+      // valueSetter: (params) => {
+      //   const datePlaced = params.value;
+      //   return {...params.row.orderDetails, datePlaced}},
       editable: true,
       sortable: true,
       filterable: true
@@ -122,6 +237,9 @@ export default function DisplayOrder() {
       valueGetter: (params) => {
         return `${params.row.orderDetails.bagsAtPickup}`;
       },
+      valueSetter: (params) => {
+        const bagsAtPickup = params.value;
+        return {...params.row.orderDetails.bagsAtPickup, bagsAtPickup}},
       editable: true,
       sortable: true,
       filterable: true
@@ -201,7 +319,7 @@ export default function DisplayOrder() {
     {
       field: 'notes',
       headerName: 'Notes',
-      width: 300,
+      width: 250,
       valueGetter: (params) => {
         return `${params.row.orderDetails.notes}`;
       },
@@ -209,16 +327,53 @@ export default function DisplayOrder() {
       sortable: true,
       filterable: true
     },
-  ], [toggleOpen, handlePopoverOpen, handlePopoverClose]);
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: 'Actions',
+      width: 100,
+      cellClassName: 'actions',
+      getActions: ({ id }) => {
+        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
 
-    const [ orders, setOrders ] = useState([]);
+        if (isInEditMode) {
+          return [
+            <GridActionsCellItem
+              icon={<SaveIcon />}
+              label="Save"
+              sx={{
+                color: 'primary.main',
+              }}
+              onClick={handleSaveClick(id)}
+            />,
+            <GridActionsCellItem
+              icon={<CancelIcon />}
+              label="Cancel"
+              className="textPrimary"
+              onClick={handleCancelClick(id)}
+              color="inherit"
+            />,
+          ];
+        }
 
-    useEffect(() => {
-        fetch("http://localhost:8080/orders")
-        .then(res=>res.json())
-        .then(result=>setOrders(result))
-        .catch(e=>console.log(e));
-    }, [orders]);
+        return [
+          <GridActionsCellItem
+            icon={<EditIcon />}
+            label="Edit"
+            className="textPrimary"
+            onClick={handleEditClick(id)}
+            color="inherit"
+          />,
+          <GridActionsCellItem
+            icon={<DeleteIcon />}
+            label="Delete"
+            onClick={handleDeleteClick(id)}
+            color="inherit"
+          />,
+        ];
+      },
+    },
+  ], [toggleOpen, handlePopoverOpen, handlePopoverClose, handleCancelClick, handleEditClick, handleSaveClick, handleDeleteClick, rowModesModel]);
 
     function getRowId(row) {
         return row.orderNumber;
@@ -226,11 +381,42 @@ export default function DisplayOrder() {
 
   return (
     <Box sx={{ height: 635, width: '90%', margin:'auto', marginTop:'50px', marginBottom:'100px' }}>
-        <h2>Order Details</h2>
+        <h1>Order Details</h1>
+        <div className={styles.searchForm}>
+          <h2>Search By:</h2>
+          <Autocomplete
+            onChange={(event, newValue) => {
+              if (newValue === null) {
+                setSearchByCustomer(false);
+                return;
+              } else {
+                setCustomer(newValue);
+                setSearchByCustomer(true);
+              }}}
+            selectOnFocus
+            clearOnBlur
+            disablePortal
+            isOptionEqualToValue={(option, value) => option.name === value.name}
+            id="search-by-customer"
+            options={customers}
+            sx={{ width: 300 }}
+            getOptionLabel={(option) => {
+              return option.name;
+            }}
+            renderOption={(props, option) => <li {...props}>{option.name}</li>}
+            renderInput={(params) => <TextField {...params} label="Customer" />}
+          />
+        </div>
       <DataGrid
+        editMode='row'
         rows={orders}
         columns={columns}
         getRowId={getRowId}
+        rowModesModel={rowModesModel}
+        onRowModesModelChange={handleRowModesModelChange}
+        onRowEditStop={handleRowEditStop}
+        processRowUpdate={(updatedRow, originalRow) => submitUpdates(updatedRow, originalRow)}
+        onProcessRowUpdateError={handleProcessRowUpdateError}
         initialState={{
           pagination: {
             paginationModel: {
@@ -264,7 +450,7 @@ export default function DisplayOrder() {
       </Popover>
       <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth={true}>
           <form onSubmit={updateCustomer}>
-          <DialogTitle>Update Customer Status</DialogTitle>
+          <DialogTitle>Update {customer.name}'s Status</DialogTitle>
           <DialogContent>
             <FormGroup>
               <FormControlLabel 
@@ -300,7 +486,16 @@ export default function DisplayOrder() {
               </DialogActions>
             </form>
           </Dialog>
-          {<SuccessAlert message="Customer status successfully updated!" />}
+          {!!snackbar && (
+        <Snackbar
+          open
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          onClose={handleCloseSnackbar}
+          autoHideDuration={6000}
+        >
+          <Alert {...snackbar} onClose={handleCloseSnackbar} />
+        </Snackbar>
+      )}
     </Box>
   );
 }
