@@ -23,6 +23,22 @@ export default function DisplayOrder() {
     isBlacklisted: false
   });
 
+  const [orderNumber, setOrderNumber] = useState('');
+
+  const [orderDetails, setOrderDetails] = useState({
+    datePlaced: '',
+    bagsAtPickup: 0,
+    bagsAtDropoff: 0,
+    numberOfLoads: 0,
+    mileage: 0,
+    pounds: 0,
+    orderPayment: 0,
+    tip: 0,
+    notes: ''
+  });
+
+  const orderObject = {orderNumber, customer, orderDetails};
+
   const [ searchByCustomer, setSearchByCustomer ] = useState(false);
 
   useEffect(() => {
@@ -111,7 +127,7 @@ export default function DisplayOrder() {
   const [snackbar, setSnackbar] = useState(null);
 
   const handleCloseSnackbar = () => setSnackbar(null);
-  // const [order, setOrder] = useState({});
+ 
   // const [rows, setRows] = useState(orders);
   const [rowModesModel, setRowModesModel] = useState({});
 
@@ -163,16 +179,49 @@ export default function DisplayOrder() {
   }, [rowModesModel]
   );
 
-  const submitUpdates = (updatedRow, originalRow) => {
-    console.log(updatedRow);
-    console.log(originalRow);
+  const buildDto = (newRow) => {
+    setOrderNumber(newRow.orderNumber);
+    setCustomer(newRow.customer);
+    setOrderDetails({
+      ...orderDetails,
+      bagsAtDropoff: newRow.bagsAtDropoff,
+      bagsAtPickup: newRow.bagsAtPickup,
+      datePlaced: newRow.datePlaced.toLocaleString('en-US', {year: 'numeric', month: 'numeric', day: 'numeric'}),
+      id: newRow.orderDetails.id,
+      mileage: newRow.mileage,
+      notes: newRow.notes,
+      numberOfLoads: newRow.numberOfLoads,
+      orderPayment: newRow.orderPayment,
+      pounds: newRow.pounds,
+      tip: newRow.tip,
+    });
 
-    setSnackbar({ children: 'User successfully saved', severity: 'success' });
+    submitUpdates();
+  }
+
+  const submitUpdates = () => {
+
+    fetch("http://localhost:8080/orders/update", {
+      method:"PATCH",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(orderObject)
+    })
+    .then(sus=> {
+      console.log(sus);
+      console.log(orderObject);
+      setSnackbar({ children: 'Order successfully updated', severity: 'success' });
+    })
+    .catch(e=>console.log(e));
+
+    setRowModesModel({
+      ...rowModesModel,
+      [orderObject.orderNumber]: { mode: GridRowModes.View, ignoreModifications: true },
+    });
+
   };
 
   const handleProcessRowUpdateError = useCallback((error) => {
     setSnackbar({ children: error.message, severity: 'error' });
-    console.log(error);
   }, []);
 
   const handleRowModesModelChange = (newRowModesModel) => {
@@ -181,8 +230,21 @@ export default function DisplayOrder() {
 
   //Column definitions
   const columns = useMemo (
-    () => [
-    { field: 'orderNumber', headerName: 'Order Number', width: 130, editable:false },
+    () => {
+      //currency column formatters
+      const currencyFormatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      });
+      const usdPrice = {
+        type: 'number',
+        width: 130,
+        valueFormatter: ({ value }) => currencyFormatter.format(value),
+        cellClassName: 'font-tabular-nums',
+      };
+
+     return [
+    { field: 'orderNumber', headerName: 'Order Number', width: 130, editable:false, },
     { 
       field: 'customerName', 
       headerName: 'Customer', 
@@ -222,12 +284,9 @@ export default function DisplayOrder() {
       type: "date",
       width: 100,
       valueGetter: (params) => new Date(params.row.orderDetails.datePlaced),
-      // valueSetter: (params) => {
-      //   const datePlaced = params.value;
-      //   return {...params.row.orderDetails, datePlaced}},
       editable: true,
       sortable: true,
-      filterable: true
+      filterable: true,
     },
     {
       field: 'bagsAtPickup',
@@ -237,12 +296,9 @@ export default function DisplayOrder() {
       valueGetter: (params) => {
         return `${params.row.orderDetails.bagsAtPickup}`;
       },
-      valueSetter: (params) => {
-        const bagsAtPickup = params.value;
-        return {...params.row.orderDetails.bagsAtPickup, bagsAtPickup}},
       editable: true,
       sortable: true,
-      filterable: true
+      filterable: true,
     },
     {
       field: 'numberOfLoads',
@@ -295,11 +351,12 @@ export default function DisplayOrder() {
     {
       field: 'orderPayment',
       headerName: 'Pay',
-      type: 'amount',
+      type: 'number',
       width: 60,
       valueGetter: (params) => {
         return `${params.row.orderDetails.orderPayment}`;
       },
+      ...usdPrice,
       editable: true,
       sortable: true,
       filterable: true,
@@ -313,6 +370,7 @@ export default function DisplayOrder() {
         return `${params.row.orderDetails.tip}`;
       },
       editable: true,
+      ...usdPrice,
       sortable: true,
       filterable: true
     },
@@ -373,14 +431,14 @@ export default function DisplayOrder() {
         ];
       },
     },
-  ], [toggleOpen, handlePopoverOpen, handlePopoverClose, handleCancelClick, handleEditClick, handleSaveClick, handleDeleteClick, rowModesModel]);
+  ]}, [toggleOpen, handlePopoverOpen, handlePopoverClose, handleCancelClick, handleEditClick, handleSaveClick, handleDeleteClick, rowModesModel]);
 
     function getRowId(row) {
         return row.orderNumber;
     }
 
   return (
-    <Box sx={{ height: 635, width: '90%', margin:'auto', marginTop:'50px', marginBottom:'100px' }}>
+    <Box sx={{ height: 400, width: '90%', margin:'auto', marginTop:'50px', marginBottom:'100px' }}>
         <h1>Order Details</h1>
         <div className={styles.searchForm}>
           <h2>Search By:</h2>
@@ -415,16 +473,17 @@ export default function DisplayOrder() {
         rowModesModel={rowModesModel}
         onRowModesModelChange={handleRowModesModelChange}
         onRowEditStop={handleRowEditStop}
-        processRowUpdate={(updatedRow, originalRow) => submitUpdates(updatedRow, originalRow)}
+        processRowUpdate={(newRow, originalRow) => {buildDto(newRow)}
+        }
         onProcessRowUpdateError={handleProcessRowUpdateError}
         initialState={{
           pagination: {
             paginationModel: {
-              pageSize: 10,
+              pageSize: 6,
             },
           },
         }}
-        pageSizeOptions={[10, 25, 50, 100]}
+        pageSizeOptions={[6, 25, 50, 100]}
         checkboxSelection
         disableRowSelectionOnClick
       />
