@@ -83,9 +83,17 @@ public class OrderService {
 
     public Order updateOrder(OrderDto orderDto) {
         Order existingOrder = getOrderByOrderNumber(orderDto.getOrderNumber());
-        existingOrder.setOrderNumber(orderDto.getOrderNumber());
-        existingOrder.setCustomer(orderDto.getCustomer());
-        existingOrder.setOrderDetails(orderDto.getOrderDetails());
+//        existingOrder.setOrderNumber(orderDto.getOrderNumber());
+//        existingOrder.setCustomer(orderDto.getCustomer());
+        existingOrder.getOrderDetails().setBagsAtDropoff(orderDto.getOrderDetails().getBagsAtDropoff());
+        existingOrder.getOrderDetails().setBagsAtPickup(orderDto.getOrderDetails().getBagsAtPickup());
+        existingOrder.getOrderDetails().setOrderPayment(orderDto.getOrderDetails().getOrderPayment());
+        existingOrder.getOrderDetails().setTip(orderDto.getOrderDetails().getTip());
+        existingOrder.getOrderDetails().setNotes(orderDto.getOrderDetails().getNotes());
+        existingOrder.getOrderDetails().setNumberOfLoads(orderDto.getOrderDetails().getNumberOfLoads());
+        existingOrder.getOrderDetails().setMileage(orderDto.getOrderDetails().getMileage());
+        existingOrder.getOrderDetails().setPounds(orderDto.getOrderDetails().getPounds());
+        existingOrder.getOrderDetails().setDatePlaced(orderDto.getOrderDetails().getDatePlaced());
 
         return orderRepository.save(existingOrder);
     }
