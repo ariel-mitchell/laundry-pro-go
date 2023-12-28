@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Autocomplete, Box, Button, Dialog, Alert, Snackbar, DialogTitle, DialogContent, DialogActions, FormGroup, FormControlLabel, Checkbox, Popover, TextField, Typography } from '@mui/material/';
-import { DataGrid, GridActionsCellItem, GridRowEditStopReasons, GridRowModes } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridEditInputCell, GridRowEditStopReasons, GridRowModes } from '@mui/x-data-grid';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -22,22 +22,6 @@ export default function DisplayOrder() {
     isRegular: false,
     isBlacklisted: false
   });
-
-  const [orderNumber, setOrderNumber] = useState('');
-
-  const [orderDetails, setOrderDetails] = useState({
-    datePlaced: '',
-    bagsAtPickup: 0,
-    bagsAtDropoff: 0,
-    numberOfLoads: 0,
-    mileage: 0,
-    pounds: 0,
-    orderPayment: 0,
-    tip: 0,
-    notes: ''
-  });
-
-  const orderObject = {orderNumber, customer, orderDetails};
 
   const [ searchByCustomer, setSearchByCustomer ] = useState(false);
 
@@ -95,7 +79,7 @@ export default function DisplayOrder() {
     })
     .then(sus=> {
       console.log(sus);
-      setSnackbar({ children: 'User successfully saved', severity: 'success' });
+      setSnackbar({ children: 'Customer status successfully saved', severity: 'success' });
     })
     .catch(e=>console.log(e));
 
@@ -128,12 +112,15 @@ export default function DisplayOrder() {
 
   const handleCloseSnackbar = () => setSnackbar(null);
  
-  // const [rows, setRows] = useState(orders);
   const [rowModesModel, setRowModesModel] = useState({});
 
   const handleRowEditStop = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
       event.defaultMuiPrevented = true;
+      setRowModesModel({
+        ...rowModesModel,
+        [params.id]: { mode: GridRowModes.View, ignoreModifications: true },
+      });
     }
   };
 
@@ -180,26 +167,29 @@ export default function DisplayOrder() {
   );
 
   const buildDto = (newRow) => {
-    setOrderNumber(newRow.orderNumber);
-    setCustomer(newRow.customer);
-    setOrderDetails({
-      ...orderDetails,
-      bagsAtDropoff: newRow.bagsAtDropoff,
-      bagsAtPickup: newRow.bagsAtPickup,
-      datePlaced: newRow.datePlaced.toLocaleString('en-US', {year: 'numeric', month: 'numeric', day: 'numeric'}),
-      id: newRow.orderDetails.id,
-      mileage: newRow.mileage,
-      notes: newRow.notes,
-      numberOfLoads: newRow.numberOfLoads,
-      orderPayment: newRow.orderPayment,
-      pounds: newRow.pounds,
-      tip: newRow.tip,
-    });
+    let orderNumber = newRow.orderNumber;
 
-    submitUpdates();
+    let customer = newRow.customer;
+
+    let orderDetails = {
+      datePlaced: newRow.datePlaced.toLocaleString('en-US', {year: 'numeric', month: 'numeric', day: 'numeric'}),
+      bagsAtPickup: newRow.bagsAtPickup,
+      bagsAtDropoff: newRow.bagsAtDropoff,
+      numberOfLoads: newRow.numberOfLoads,
+      mileage: newRow.mileage,
+      pounds: newRow.pounds,
+      orderPayment: newRow.orderPayment,
+      tip: newRow.tip,
+      notes: newRow.notes,
+      id: newRow.orderDetails.id,
+    };
+
+    let orderObject = {orderNumber, customer, orderDetails};
+
+      submitUpdates(orderObject);
   }
 
-  const submitUpdates = () => {
+  const submitUpdates = (orderObject) => {
 
     fetch("http://localhost:8080/orders/update", {
       method:"PATCH",
@@ -208,7 +198,6 @@ export default function DisplayOrder() {
     })
     .then(sus=> {
       console.log(sus);
-      console.log(orderObject);
       setSnackbar({ children: 'Order successfully updated', severity: 'success' });
     })
     .catch(e=>console.log(e));
@@ -220,6 +209,7 @@ export default function DisplayOrder() {
 
   };
 
+  //TODO: figure out error with save button not being able to find orderNumber
   const handleProcessRowUpdateError = useCallback((error) => {
     setSnackbar({ children: error.message, severity: 'error' });
   }, []);
@@ -249,7 +239,7 @@ export default function DisplayOrder() {
       field: 'customerName', 
       headerName: 'Customer', 
       type: 'text',
-      width: 150,
+      width: 130,
       valueGetter: (params) => {
         return `${params.row.customer}`;
       },
@@ -299,6 +289,14 @@ export default function DisplayOrder() {
       editable: true,
       sortable: true,
       filterable: true,
+      renderEditCell: (params) => (
+        <GridEditInputCell
+          {...params}
+          inputProps={{
+            min: 0,
+          }}
+        />
+      ),
     },
     {
       field: 'numberOfLoads',
@@ -310,7 +308,15 @@ export default function DisplayOrder() {
       },
       editable: true,
       sortable: true,
-      filterable: true
+      filterable: true,
+      renderEditCell: (params) => (
+        <GridEditInputCell
+          {...params}
+          inputProps={{
+            min: 0,
+          }}
+        />
+      ),
     },
     {
       field: 'pounds',
@@ -322,7 +328,15 @@ export default function DisplayOrder() {
       },
       editable: true,
       sortable: true,
-      filterable: true
+      filterable: true,
+      renderEditCell: (params) => (
+        <GridEditInputCell
+          {...params}
+          inputProps={{
+            min: 0,
+          }}
+        />
+      ),
     },
     {
       field: 'bagsAtDropoff',
@@ -334,7 +348,15 @@ export default function DisplayOrder() {
       },
       editable: true,
       sortable: true,
-      filterable: true
+      filterable: true,
+      renderEditCell: (params) => (
+        <GridEditInputCell
+          {...params}
+          inputProps={{
+            min: 0,
+          }}
+        />
+      ),
     },
     {
       field: 'mileage',
@@ -346,13 +368,20 @@ export default function DisplayOrder() {
       },
       editable: true,
       sortable: true,
-      filterable: true
+      filterable: true,
+      renderEditCell: (params) => (
+        <GridEditInputCell
+          {...params}
+          inputProps={{
+            min: 0,
+          }}
+        />
+      ),
     },
     {
       field: 'orderPayment',
       headerName: 'Pay',
-      type: 'number',
-      width: 60,
+      type: 'usdPrice',
       valueGetter: (params) => {
         return `${params.row.orderDetails.orderPayment}`;
       },
@@ -360,19 +389,34 @@ export default function DisplayOrder() {
       editable: true,
       sortable: true,
       filterable: true,
+      renderEditCell: (params) => (
+        <GridEditInputCell
+          {...params}
+          inputProps={{
+            min: 0,
+          }}
+        />
+      ),
     },
     {
       field: 'tip',
       headerName: 'Tip',
-      type: 'number',
-      width: 60,
+      type: 'usdPrice',
       valueGetter: (params) => {
         return `${params.row.orderDetails.tip}`;
       },
       editable: true,
       ...usdPrice,
       sortable: true,
-      filterable: true
+      filterable: true,
+      renderEditCell: (params) => (
+        <GridEditInputCell
+          {...params}
+          inputProps={{
+            min: 0,
+          }}
+        />
+      ),
     },
     {
       field: 'notes',
@@ -388,7 +432,6 @@ export default function DisplayOrder() {
     {
       field: 'actions',
       type: 'actions',
-      headerName: 'Actions',
       width: 100,
       cellClassName: 'actions',
       getActions: ({ id }) => {
