@@ -19,3 +19,29 @@
   margin-bottom: 30px;
   padding-bottom:30px;
 }
+
+.appName {
+  color: white;
+  text-decoration: none;
+}
+
+ ul li a {
+  color: #000;
+  text-decoration: none;
+ }
+ 
+ ul li a:hover {
+  color: #00a8ff;
+  text-decoration: none;
+ }
+ 
+ ul li a.active {
+  color: #00a8ff;
+  text-decoration: none;
+ }
+
+ .loadingContainer {
+  font-size: xx-large;
+	margin:200px;
+	padding: 0 20px;
+}

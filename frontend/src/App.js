@@ -1,24 +1,32 @@
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 
 import './App.css';
-import OrderForm from './components/OrderForm';
-import ButtonAppBar from './components/Appbar';
+import AppBar from './components/Appbar';
 import Footer from './components/Footer';
-import DisplayOrder from './components/DisplayOrder'
+const NoMatch = lazy(() => import('./components/NoMatch'));
+const Home = lazy(() => import('./pages/Home'));
+const Orders = lazy(() => import('./pages/Orders'));
+const Expenses = lazy(() => import('./pages/Expenses'));
+const Blacklist = lazy(() => import('./pages/Blacklist'));
+const Calendar = lazy(() => import('./pages/Calendar'));
 
 function App() {
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <div className="App">
-      <ButtonAppBar/>
-      <OrderForm />
-      <DisplayOrder />
+    <div className="App">
+      <AppBar/>
+      <Suspense fallback={<div className="loadingContainer">Loading...</div>}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/expenses" element={<Expenses />} />
+          <Route path="/blacklist" element={<Blacklist />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="*" element={<NoMatch />} />
+        </Routes>
+      </Suspense>
       <Footer/>
-
      </div>
-    </LocalizationProvider>
-
   );
 }
 

@@ -7,6 +7,7 @@ import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
 
+
 import styles from "./DisplayOrder.module.css";
 
 export default function DisplayOrder() {
@@ -228,7 +229,7 @@ export default function DisplayOrder() {
       });
       const usdPrice = {
         type: 'number',
-        width: 130,
+        width: 80,
         valueFormatter: ({ value }) => currencyFormatter.format(value),
         cellClassName: 'font-tabular-nums',
       };
@@ -421,7 +422,7 @@ export default function DisplayOrder() {
     {
       field: 'notes',
       headerName: 'Notes',
-      width: 250,
+      width: 280,
       valueGetter: (params) => {
         return `${params.row.orderDetails.notes}`;
       },
@@ -481,7 +482,7 @@ export default function DisplayOrder() {
     }
 
   return (
-    <Box sx={{ height: 400, width: '90%', margin:'auto', marginTop:'50px', marginBottom:'100px' }}>
+    <Box sx={{ height: 650, width: '90%', margin:'auto', marginTop:'50px', marginBottom:'200px' }}>
         <h1>Order Details</h1>
         <div className={styles.searchForm}>
           <h2>Search By:</h2>
@@ -522,13 +523,13 @@ export default function DisplayOrder() {
         initialState={{
           pagination: {
             paginationModel: {
-              pageSize: 6,
+              pageSize: 10,
             },
           },
         }}
-        pageSizeOptions={[6, 25, 50, 100]}
-        checkboxSelection
-        disableRowSelectionOnClick
+        pageSizeOptions={[10, 25, 50, 100]}
+        checkboxSelection={false}
+        disableRowSelectionOnClick={true}
       />
       <Popover
         id="mouse-over-popover"
