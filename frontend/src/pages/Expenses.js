@@ -1,9 +1,13 @@
+import * as React from 'react';
 
+import ExpenseForm from '../components/ExpenseForm';
+import DisplayExpenses from '../components/DisplayExpenses';
 
 export default function Expenses() {
     return (
-        <>
-            <h1>Add and View expenses</h1>
-        </>
+        <div>
+            <ExpenseForm />
+            <DisplayExpenses />
+        </div>
     )
 }

@@ -21,38 +21,36 @@ export default function Blacklist() {
     fetch("http://localhost:8080/customers").then(res=>res.json()).then(result=>setCustomers(result)).catch(e=>console.log(e));
     })
 
-      //Handlers and fields for updating customer in a dialogue box
-  const [ open, toggleOpen ] = useState(false);
+    //Handlers and fields for updating customer in a dialogue box
+    const [ open, toggleOpen ] = useState(false);
 
-  const updateCustomer = (e) => {
-    e.preventDefault();
+    const updateCustomer = (e) => {
+        e.preventDefault();
 
-    let url = `http://localhost:8080/customers/${customer.id}/status`;
+        let url = `http://localhost:8080/customers/${customer.id}/status`;
 
-    fetch(url, {
-      method:"PATCH",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(customer)
-    })
-    .then(sus=> {
-      console.log(sus);
-    //   setSnackbar({ children: 'Customer status successfully saved', severity: 'success' });
-    })
-    .catch(e=>console.log(e));
+        fetch(url, {
+        method:"PATCH",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(customer)
+        })
+        .then(sus=> {
+        console.log(sus);
+        })
+        .catch(e=>console.log(e));
 
-    handleClose();
-  }
+        handleClose();
+    }
 
-  const handleClose = () => {
-    toggleOpen(false);
-  };
+    const handleClose = () => {
+        toggleOpen(false);
+    };
 
 
   return (
     <div>
         <TableContainer component={Paper} sx={{ width:"40%", margin:"auto", marginTop:"40px" }}>
             <h1>Blacklist (Do Not Take)</h1>
-            
             <Table  aria-label="simple table">
                 <TableHead>
                 <TableRow>

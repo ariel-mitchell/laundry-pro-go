@@ -4,8 +4,6 @@ import { Alert, Autocomplete, Box, Button, Checkbox, Collapse, createFilterOptio
 import { FormControl, FormControlLabel, FormGroup, FormHelperText, InputAdornment, InputLabel, OutlinedInput, TextField } from '@mui/material/';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-// import Alert from '@mui/material/Alert';
-// import Stack from '@mui/material/Stack';
 
 import styles from './OrderForm.module.css';
 
@@ -180,8 +178,7 @@ export default function OrderForm() {
     <div>
       <Collapse in={visible}>
         <h1>Add An Order</h1>
-        {/* TODO: add alert HTML elements instead of window alert? */}
-        {/* <Alert open={!!orderNumber} sx={{ width: '50%', margin:'auto', marginTop:'30px', marginBottom:'30px' }} variant="filled" severity="error">Order Number is Required!</Alert> */}
+        {/* TODO: add snackbar alerts instead of window alert? */}
         <Box
         className={styles.container}
           component="form"
