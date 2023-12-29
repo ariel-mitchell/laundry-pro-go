@@ -18,7 +18,7 @@ public class SearchController {
     SearchService searchService;
 
     @GetMapping("/byCustomer/{id}")
-    public ResponseEntity<List<OrderDto>> getAllOrders(@PathVariable("id") int customerId) {
+    public ResponseEntity<List<OrderDto>> getAllOrdersByCustomer(@PathVariable("id") int customerId) {
         return new ResponseEntity<>(searchService.getOrdersByCustomer(customerId), HttpStatus.OK);
     }
 
