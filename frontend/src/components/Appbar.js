@@ -57,9 +57,9 @@ export default function Appbar() {
             </MenuItem>
           </Menu>
           <Typography variant="h6" component="div" sx={{ textAlign:"left", flexGrow: 1 }}>
-            <Link to="/orders" className="appName" >Laundry Pro Go</Link>
+            <Link to="/orders" className="navBarLinks" >Laundry Pro Go</Link>
           </Typography>
-          <Button color="inherit">Login</Button>
+          <Button><Link to="/" className="navBarLinks">Login</Link></Button>
         </Toolbar>
       </AppBar>
     </Box>
